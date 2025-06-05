@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './RestaurantForm.css';
 
-const RestaurantForm = ({ onSave }) => {
+const RestaurantForm = ({ onSave, disabled = false }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -17,20 +17,26 @@ const RestaurantForm = ({ onSave }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      id: Date.now()
-    });
     
-    // Reset form
-    setFormData({
-      name: '',
-      description: '',
-      address: '',
-      image: ''
-    });
+    try {
+      await onSave({
+        ...formData,
+        id: Date.now() // Firebase crea el id
+      });
+      
+      // Reset form solo si el guardado fue exitoso
+      setFormData({
+        name: '',
+        description: '',
+        address: '',
+        image: ''
+      });
+    } catch (error) {
+      // No reseteamos el form si hubo error
+      console.error('Error en el formulario:', error);
+    }
   };
 
   return (
@@ -43,6 +49,7 @@ const RestaurantForm = ({ onSave }) => {
           name="name"
           value={formData.name}
           onChange={handleChange}
+          disabled={disabled}
           required
         />
       </div>
@@ -55,6 +62,7 @@ const RestaurantForm = ({ onSave }) => {
           name="description"
           value={formData.description}
           onChange={handleChange}
+          disabled={disabled}
           required
         />
       </div>
@@ -67,6 +75,7 @@ const RestaurantForm = ({ onSave }) => {
           name="address"
           value={formData.address}
           onChange={handleChange}
+          disabled={disabled}
           required
         />
       </div>
@@ -79,11 +88,18 @@ const RestaurantForm = ({ onSave }) => {
           name="image"
           value={formData.image}
           onChange={handleChange}
+          disabled={disabled}
           required
         />
       </div>
       
-      <button type="submit" className="save-button">Guardar</button>
+      <button 
+        type="submit" 
+        className="save-button"
+        disabled={disabled}
+      >
+        {disabled ? 'Guardando...' : 'Guardar'}
+      </button>
     </form>
   );
 };
